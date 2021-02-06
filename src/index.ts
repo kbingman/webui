@@ -1,11 +1,38 @@
-/**
- * This file is just a silly example to show everything working in the browser.
- * When you're ready to start on your site, clear the file. Happy hacking!
- **/
+import { checkWebGL, createProgram, getShader } from './webgl';
 
-import confetti from 'canvas-confetti';
+export const main = () => {
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement | null;
+  const gl = checkWebGL(canvas);
 
-confetti.create(document.getElementById('canvas') as HTMLCanvasElement, {
-  resize: true,
-  useWorker: true,
-})({ particleCount: 200, spread: 200 });
+  if (!gl || !(gl instanceof WebGLRenderingContext)) {
+    return;
+  }
+
+  const VSHADER_SOURCE =
+    'void main() {\n' +
+    '  gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\n' + // Set the vertex coordinates of the point
+    '  gl_PointSize = 20.0;\n' + // Set the point size
+    '}\n';
+
+  const FSHADER_SOURCE =
+    'void main() {\n' +
+    '  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n' + // Set the point color
+    '}\n';
+  const vertexShader = getShader(gl, gl.VERTEX_SHADER, VSHADER_SOURCE);
+  const fragmentShader = getShader(gl, gl.FRAGMENT_SHADER, FSHADER_SOURCE);
+
+  if (!vertexShader || !fragmentShader) {
+    return;
+  }
+
+  const program = createProgram(gl, vertexShader, fragmentShader);
+
+  gl.useProgram(program);
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  // Draw a point
+  gl.drawArrays(gl.POINTS, 0, 1);
+};
+
+main();
